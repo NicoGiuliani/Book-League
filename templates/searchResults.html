@@ -1,8 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
 {% if searchResult %}
-<h1>{{searchResult.title}}</h1>
-<h2>{{searchResult.author}}</h2>
-<img src={{searchResult.thumbnail}} />
-<p>{{searchResult.description}}</p>
+{% for book in searchResult %}
+  <h1>{{book.title}}</h1>
+  <h2>{{book.author}}</h2>
+  {% if book.thumbnail %}
+  <img src={{book.thumbnail}} />
+  {% else %}
+  <div class="border w-25">
+    <p>No image available</p>
+  </div>
+  {% endif %}
+  <p>{{book.description}}</p>
+  <hr />
+{% endfor %}
 {% else %}
 <p>I have no idea what you tried to search</p>
 {% endif %}
+{% endblock %}
