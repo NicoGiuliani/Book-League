@@ -1,16 +1,16 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views import generic
 from urllib.parse import urlencode
 from .forms import UserSignupForm
+from app.models import Book
 import requests
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
-
 
 # Create your views here.
 def index(request):
@@ -21,34 +21,30 @@ def AddBookView(request):
 
 def SearchResultsView(request):
     base_url = "https://www.googleapis.com/books/v1/volumes?"
-    params = {'q': request.GET['title'], 'inauthor': request.GET['author'], 'key': os.environ.get('API_KEY')}
+    params = {
+        'q': request.GET['title'] + ' inauthor:' + request.GET['author'], 
+        'key': os.environ.get('API_KEY'),
+        'maxResults': 40
+    }
+    url = base_url + urlencode(params)
 
     try:
-        response = requests.get(base_url, params=params)
+        response = requests.get(url)
         response_json = response.json()
         bookList = []
-        print(response_json['totalItems'])
 
-        if response_json['totalItems'] > 0:
-            for i in range(response_json['totalItems']):
-                print("i:", i)
-                volumeInfo = response_json['items'][i]['volumeInfo']
-                print(volumeInfo)
+        if len(response_json['items']) > 0:
+            for i in range(len(response_json['items'])):
+                volumeInfo = response_json['items'][i]['volumeInfo'] if 'volumeInfo' in response_json['items'][i] else ''
                 bookInfo = {
-                    "title": volumeInfo['title'],
-                    "author": volumeInfo['authors'][0],
-                    "description": volumeInfo['description'],
+                    "title": volumeInfo['title'] if 'title' in volumeInfo else 'No title listed',
+                    "author": volumeInfo['authors'][0] if 'authors' in volumeInfo and (len(volumeInfo['authors']) > 0) else 'No author listed',
+                    "description": volumeInfo['description'] if 'description' in volumeInfo else 'No description listed',
                     "thumbnail": volumeInfo['imageLinks']['thumbnail'] if ('imageLinks' in volumeInfo and 'thumbnail' in volumeInfo['imageLinks']) else None,
-                    "language": volumeInfo['language']
+                    "language": volumeInfo['language'] if 'language' in volumeInfo else 'No language listed',
+                    "bookId": response_json['items'][i]['id']
                 }
-                print("got book info")
                 bookList.append(bookInfo)
-                print("bookList length:", len(bookList))
-                if len(bookList) == 5:
-                    print("Reached length 5")
-                    print("final bookList:", bookList)
-                    break
-            print("rendering...")
             return render(request, "searchResults.html", { "searchResult": bookList })
         else:
             print("No results found")
@@ -58,12 +54,37 @@ def SearchResultsView(request):
         return render(request, "error.html")
     
 
+def NewDiscussionView(request):
+    title = request.POST['title']
+    author = request.POST['author']
+    description = request.POST['description']
+    thumbnail = request.POST['thumbnail']
+    bookId = request.POST['bookId']
+    return render(request, "postForm.html", {
+        "title": title, 
+        "author": author, 
+        "description": description, 
+        "thumbnail": thumbnail,
+        "bookId": bookId
+    })
+
+def NewBookView(request):
+    title = request.POST['title']
+    author = request.POST['author']
+    description = request.POST['description']
+    thumbnail = request.POST['thumbnail']
+    bookId = request.POST['bookId']
+    newBook = Book(title=title, author=author, description=description, thumbnail=thumbnail, bookId=bookId)
+    newBook.save()
+    print("Redirecting home...")
+    return redirect(reverse("home"))
+
+def NewCommentView(request):
+    postTitle = request.POST['postTitle']
+    postText = request.POST['postText']
+    pass
+
 class SignUpView(generic.CreateView):
     form_class = UserSignupForm
     success_url = reverse_lazy("login")
     template_name = "registration/signup.html"
-
-
-
-# def login(request):
-#     return render(request, 'login.html')

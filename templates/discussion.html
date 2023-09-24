@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if user.is_authenticated %}
+  <div class="card border-primary mb-3">
+    <div class="card-header">{{title}}</div>
+    <div class="row">
+      <div class="col-2 d-flex align-items-center justify-content-center">
+        {% if thumbnail %}
+        <img class="my-3 ms-3" src="{{thumbnail}}" />
+        {% else %}
+        <div class="border p-2">
+          <span>No image available</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="col-10">
+        <div class="card-body">
+          <h4 class="card-title">{{author}}</h4>
+          <p class="card-text pe-5">{{description}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+    <a href="#" class="btn btn-primary">Write a post</a>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">User</th>
+          <th scope="col">Post Preview</th>
+          <th scope="col">Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="table-primary">
+          <th scope="row">Primary</th>
+          <td>Column content</td>
+          <td>Column content</td>
+          <td>Column content</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+{% endblock %}
