@@ -23,11 +23,12 @@
     </div>
   </div>
 </div>
+<!-- new book, or just new post??? -->
 <form action="/newBook/" method="POST">
   {% csrf_token %} 
   <div class="form-group d-flex flex-column gap-3 mb-3">
-    <input class="form-control" type="text" id="postTitle" placeholder="Post title" required />
-    <textarea class="form-control" id="postText" rows="3" placeholder="Enter your post here" required></textarea>
+    <input class="form-control" type="text" id="postTitle" name="postTitle" placeholder="Post title" required />
+    <textarea class="form-control" id="postText" name="postText" rows="3" placeholder="Enter your post here" required></textarea>
   </div>
   <input type="hidden" name="title" value="{{title}}" />
   <input type="hidden" name="author" value="{{author}}" />

@@ -13,3 +13,9 @@ class Book(models.Model):
     description = models.CharField(max_length=1000)
     thumbnail = models.CharField(max_length=1000)
     bookId = models.CharField(max_length=50)
+
+class Post(models.Model):
+    postTitle = models.CharField(max_length=100)
+    postText = models.CharField(max_length=100)
+    bookId = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True)

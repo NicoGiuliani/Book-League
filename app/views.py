@@ -1,11 +1,14 @@
+import json
+from django.forms import model_to_dict
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
+
 from urllib.parse import urlencode
 from .forms import UserSignupForm
-from app.models import Book
+from app.models import Book, Post
 import requests
 from dotenv import load_dotenv
 import os
@@ -36,7 +39,7 @@ def SearchResultsView(request):
         if len(response_json['items']) > 0:
             for i in range(len(response_json['items'])):
                 volumeInfo = response_json['items'][i]['volumeInfo'] if 'volumeInfo' in response_json['items'][i] else ''
-                bookInfo = {
+                book = {
                     "title": volumeInfo['title'] if 'title' in volumeInfo else 'No title listed',
                     "author": volumeInfo['authors'][0] if 'authors' in volumeInfo and (len(volumeInfo['authors']) > 0) else 'No author listed',
                     "description": volumeInfo['description'] if 'description' in volumeInfo else 'No description listed',
@@ -44,8 +47,19 @@ def SearchResultsView(request):
                     "language": volumeInfo['language'] if 'language' in volumeInfo else 'No language listed',
                     "bookId": response_json['items'][i]['id']
                 }
-                bookList.append(bookInfo)
-            return render(request, "searchResults.html", { "searchResult": bookList })
+                bookList.append(book)
+
+            # All the book IDs returned in this search
+            bookIds = list(map(lambda book: book['bookId'], bookList))
+
+            # All books in the database that showed up in this search
+            booksInDb = Book.objects.filter(bookId__in=bookIds)
+            booksInDbList = list(booksInDb)
+
+            idsInDb = list(map(lambda book: book.bookId, booksInDbList))
+            filteredList = list(filter(lambda book: book['bookId'] not in idsInDb, bookList))
+
+            return render(request, "searchResults.html", { "booksInDatabase": booksInDb, "searchResult": filteredList })
         else:
             print("No results found")
             return render(request, "searchResults.html", { "searchResult": None })
@@ -55,11 +69,11 @@ def SearchResultsView(request):
     
 
 def NewDiscussionView(request):
-    title = request.POST['title']
-    author = request.POST['author']
-    description = request.POST['description']
-    thumbnail = request.POST['thumbnail']
-    bookId = request.POST['bookId']
+    title = request.POST["title"]
+    author = request.POST["author"]
+    description = request.POST["description"]
+    thumbnail = request.POST["thumbnail"]
+    bookId = request.POST["bookId"]
     return render(request, "postForm.html", {
         "title": title, 
         "author": author, 
@@ -69,20 +83,65 @@ def NewDiscussionView(request):
     })
 
 def NewBookView(request):
-    title = request.POST['title']
-    author = request.POST['author']
-    description = request.POST['description']
-    thumbnail = request.POST['thumbnail']
-    bookId = request.POST['bookId']
-    newBook = Book(title=title, author=author, description=description, thumbnail=thumbnail, bookId=bookId)
-    newBook.save()
-    print("Redirecting home...")
-    return redirect(reverse("home"))
+    newBook = {
+        "title": request.POST['title'],
+        "author": request.POST['author'],
+        "description": request.POST['description'],
+        "thumbnail": request.POST['thumbnail'],
+        "bookId": request.POST['bookId'],
+    }
 
-def NewCommentView(request):
-    postTitle = request.POST['postTitle']
-    postText = request.POST['postText']
-    pass
+    book = Book(
+        title=newBook["title"], 
+        author=newBook["author"], 
+        description=newBook["description"], 
+        thumbnail=newBook["thumbnail"], 
+        bookId=newBook["bookId"]
+        )
+    book.save()
+
+    request.session['redirectFromNewBook'] = True
+    request.session['postTitle'] = request.POST['postTitle']
+    request.session['postText'] = request.POST['postText']
+    request.session['book'] = newBook
+    return redirect(reverse("newPost"))
+
+def NewPostView(request, bookId=None):
+    if bookId is not None:
+        print("Writing a post for an existing book...")
+        book = Book.objects.filter(bookId=bookId).first()
+        return render(request, "postForm.html", {
+            "title": book.title, 
+            "author": book.author, 
+            "description": book.description, 
+            "thumbnail": book.thumbnail,
+            "bookId": book.bookId
+        })
+    elif (request.session['redirectFromNewBook']):
+        print("Writing a post for a newly added book...")
+        postTitle = request.session.get('postTitle')
+        postText = request.session.get('postText')
+        book = request.session.get('book')
+        bookId = book['bookId']
+
+        newPost = Post(postTitle=postTitle, postText=postText, bookId=bookId)
+
+        # Clear session variables
+        request.session['redirectFromNewBook'] = False
+        request.session['postTitle'] = None
+        request.session['postText'] = None
+        request.session['book'] = None
+    else:
+        print("An error may have occurred")
+        pass
+
+    newPost.save()
+    return redirect(reverse("discussion", args=(bookId,)))
+
+def DiscussionView(request, bookId):
+    book = Book.objects.filter(bookId=bookId).first()
+    posts = Post.objects.filter(bookId=book.bookId)
+    return render(request, "discussion.html", {"book": book, "posts": posts})
 
 class SignUpView(generic.CreateView):
     form_class = UserSignupForm

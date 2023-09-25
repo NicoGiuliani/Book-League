@@ -8,5 +8,7 @@ urlpatterns = [
     path("searchResults/", views.SearchResultsView, name="searchResults"),
     path("newDiscussion/", views.NewDiscussionView, name="newDiscussion"),
     path("newBook/", views.NewBookView, name="newBook"),
-    path("newComment/", views.NewCommentView, name="newComment"),
+    path("newPost/<str:bookId>", views.NewPostView, name="newPost"),
+    path("newPost/", views.NewPostView, name="newPost"),
+    path("discussion/<str:bookId>", views.DiscussionView, name="discussion"),
 ]
