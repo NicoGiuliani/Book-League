@@ -2,12 +2,11 @@
 
 {% block content %}
 <h1>Search Results</h1>
-<h2>In Database</h2>
 
 {% if booksInDatabase %}
   {% for bookInDatabase in booksInDatabase %}
     <div class="card border-primary mb-3">
-      <div class="card-header bg-danger">{{bookInDatabase.title}}</div>
+      <div class="card-header bg-danger text-white">{{bookInDatabase.title}}</div>
       <div class="row">
         <div class="col-2 d-flex align-items-center justify-content-center">
           {% if bookInDatabase.thumbnail %}
@@ -20,7 +19,13 @@
         </div>
         <div class="col-10">
           <div class="card-body">
-            <h4 class="card-title">{{bookInDatabase.author}}</h4>
+            <h4 class="card-title">
+              {% if bookInDatabase.author %}
+              {{bookInDatabase.author}}tag
+              {% else %}
+              <span>No author listed</span>
+              {% endif %}
+            </h4>
             <p class="card-text pe-5">{{bookInDatabase.description}}</p>
             <!-- <form action="/discussion/" method="GET"> -->
               <!-- {% csrf_token %}  -->
@@ -35,15 +40,15 @@
         </div>
       </div>
     </div>
-  {% endfor %}
+    {% endfor %}
+<hr/>
 {% endif %}
 
-<hr/>
 
 {% if searchResult %}
   {% for book in searchResult %}
     <div class="card border-primary mb-3">
-      <div class="card-header bg-warning">{{book.title}}</div>
+      <div class="card-header bg-warning text-white">{{book.title}}</div>
       <div class="row">
         <div class="col-2 d-flex align-items-center justify-content-center">
           {% if book.thumbnail %}

@@ -25,11 +25,12 @@ def AddBookView(request):
 def SearchResultsView(request):
     base_url = "https://www.googleapis.com/books/v1/volumes?"
     params = {
-        'q': request.GET['title'] + ' inauthor:' + request.GET['author'], 
+        'q': request.GET['title'] + " " + request.GET['author'], 
         'key': os.environ.get('API_KEY'),
         'maxResults': 40
     }
     url = base_url + urlencode(params)
+    print(url)
 
     try:
         response = requests.get(url)
@@ -40,9 +41,9 @@ def SearchResultsView(request):
             for i in range(len(response_json['items'])):
                 volumeInfo = response_json['items'][i]['volumeInfo'] if 'volumeInfo' in response_json['items'][i] else ''
                 book = {
-                    "title": volumeInfo['title'] if 'title' in volumeInfo else 'No title listed',
-                    "author": volumeInfo['authors'][0] if 'authors' in volumeInfo and (len(volumeInfo['authors']) > 0) else 'No author listed',
-                    "description": volumeInfo['description'] if 'description' in volumeInfo else 'No description listed',
+                    "title": volumeInfo['title'] if 'title' in volumeInfo else None,
+                    "author": volumeInfo['authors'][0] if 'authors' in volumeInfo and (len(volumeInfo['authors']) > 0) else None,
+                    "description": volumeInfo['description'] if 'description' in volumeInfo else None,
                     "thumbnail": volumeInfo['imageLinks']['thumbnail'] if ('imageLinks' in volumeInfo and 'thumbnail' in volumeInfo['imageLinks']) else None,
                     "language": volumeInfo['language'] if 'language' in volumeInfo else 'No language listed',
                     "bookId": response_json['items'][i]['id']
@@ -58,6 +59,19 @@ def SearchResultsView(request):
 
             idsInDb = list(map(lambda book: book.bookId, booksInDbList))
             filteredList = list(filter(lambda book: book['bookId'] not in idsInDb, bookList))
+
+            print(request.GET['author'])
+            print(filteredList[0]["author"])
+            print(request.GET['author'].lower() in filteredList[0]["author"].lower())
+
+            # Do additional sorting of the search results
+            filteredList.sort(key=lambda x: x["thumbnail"] is not None, reverse=True)
+            filteredList.sort(key=lambda x: x["description"] is not None, reverse=True)
+            filteredList.sort(key=lambda x: x["author"] is not None, reverse=True)
+            filteredList.sort(key=lambda x: x["author"] is not None and request.GET["author"].lower() in x["author"].lower(), reverse=True)
+            filteredList.sort(key=lambda x: x["title"] is not None and request.GET["title"].lower() in x["title"].lower(), reverse=True)
+            filteredList.sort(key=lambda x: x["author"] is not None and request.GET['author'].lower() == x["author"].lower(), reverse=True)
+            filteredList.sort(key=lambda x: x["title"] is not None and request.GET['title'].lower() == x["title"].lower(), reverse=True)
 
             return render(request, "searchResults.html", { "booksInDatabase": booksInDb, "searchResult": filteredList })
         else:
@@ -79,7 +93,8 @@ def NewDiscussionView(request):
         "author": author, 
         "description": description, 
         "thumbnail": thumbnail,
-        "bookId": bookId
+        "bookId": bookId,
+        "newBook": True
     })
 
 def NewBookView(request):
@@ -115,32 +130,34 @@ def NewPostView(request, bookId=None):
             "author": book.author, 
             "description": book.description, 
             "thumbnail": book.thumbnail,
-            "bookId": book.bookId
+            "bookId": book.bookId,
+            "newBook": False
         })
-    elif (request.session['redirectFromNewBook']):
-        print("Writing a post for a newly added book...")
-        postTitle = request.session.get('postTitle')
-        postText = request.session.get('postText')
-        book = request.session.get('book')
-        bookId = book['bookId']
+    else:
+        if (request.session['redirectFromNewBook']):
+            print("should be here...")
+            postTitle = request.session.get('postTitle')
+            postText = request.session.get('postText')
+            bookId = request.session.get('book')['bookId']
+            
+            # Clear session variables
+            request.session['redirectFromNewBook'] = False
+            request.session['postTitle'] = None
+            request.session['postText'] = None
+            request.session['book'] = None
+        else:
+            postTitle = request.POST['postTitle']
+            postText = request.POST['postText']
+            bookId = request.POST['bookId']
 
         newPost = Post(postTitle=postTitle, postText=postText, bookId=bookId)
-
-        # Clear session variables
-        request.session['redirectFromNewBook'] = False
-        request.session['postTitle'] = None
-        request.session['postText'] = None
-        request.session['book'] = None
-    else:
-        print("An error may have occurred")
-        pass
 
     newPost.save()
     return redirect(reverse("discussion", args=(bookId,)))
 
 def DiscussionView(request, bookId):
     book = Book.objects.filter(bookId=bookId).first()
-    posts = Post.objects.filter(bookId=book.bookId)
+    posts = Post.objects.filter(bookId=book.bookId).order_by('-timestamp')
     return render(request, "discussion.html", {"book": book, "posts": posts})
 
 class SignUpView(generic.CreateView):

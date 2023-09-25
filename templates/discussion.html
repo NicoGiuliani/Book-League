@@ -39,11 +39,7 @@
           <th scope="row">{{post.postTitle}}</th>
           <td>{{user.username}}</td>
           <td>
-            {% if post.postText|length > 30 %}
-              {{post.postText|preview:30}} ...
-            {% else %}
-              {{post.postText}}
-            {% endif %}
+            {{post.postText|preview:30}}
           </td>
           <td>{{post.timestamp}}</td>
         </tr>

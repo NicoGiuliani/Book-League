@@ -8,11 +8,11 @@ class CustomUser(AbstractUser):
     email = models.EmailField(max_length=50)
 
 class Book(models.Model):
+    bookId = models.CharField(max_length=50, primary_key=True)
     title = models.CharField(max_length=100)
     author = models.CharField(max_length=100)
     description = models.CharField(max_length=1000)
     thumbnail = models.CharField(max_length=1000)
-    bookId = models.CharField(max_length=50)
 
 class Post(models.Model):
     postTitle = models.CharField(max_length=100)

@@ -24,7 +24,7 @@
   </div>
 </div>
 <!-- new book, or just new post??? -->
-<form action="/newBook/" method="POST">
+<form action="{% if newBook %}/newBook/{% else %}/newPost/{% endif %}" method="POST">
   {% csrf_token %} 
   <div class="form-group d-flex flex-column gap-3 mb-3">
     <input class="form-control" type="text" id="postTitle" name="postTitle" placeholder="Post title" required />

@@ -1,6 +1,7 @@
 venv/
 app/__pycache__/
 bookLeague/__pycache__/
+app/templatetags/__pycache__
 app/migrations/__pycache__/
 db.sqlite3
 .env
