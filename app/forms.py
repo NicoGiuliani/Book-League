@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth import get_user_model
 from .models import CustomUser
@@ -16,7 +16,7 @@ class UserSignupForm(UserCreationForm):
         widget=forms.TextInput(
             attrs={
                 "placeholder": "Username",
-                "class": "form-control",
+                "class": "form-control text-center",
             }
         ),
     )
@@ -27,7 +27,7 @@ class UserSignupForm(UserCreationForm):
         widget=forms.TextInput(
             attrs={
                 "placeholder": "First name",
-                "class": "form-control",
+                "class": "form-control text-center",
             }
         ),
     )
@@ -38,7 +38,7 @@ class UserSignupForm(UserCreationForm):
         widget=forms.TextInput(
             attrs={
                 "placeholder": "Last name",
-                "class": "form-control",
+                "class": "form-control text-center",
             }
         ),
     )
@@ -49,7 +49,7 @@ class UserSignupForm(UserCreationForm):
         widget=forms.TextInput(
             attrs={
                 "placeholder": "Email",
-                "class": "form-control",
+                "class": "form-control text-center",
             }
         ),
     )
@@ -60,7 +60,7 @@ class UserSignupForm(UserCreationForm):
         widget=forms.PasswordInput(
             attrs={
                 "placeholder": "Password",
-                "class": "form-control",
+                "class": "form-control text-center",
             }
         ),
     )
@@ -71,7 +71,7 @@ class UserSignupForm(UserCreationForm):
         widget=forms.PasswordInput(
             attrs={
                 "placeholder": "Repeat password",
-                "class": "form-control",
+                "class": "form-control text-center",
             }
         ),
     )
@@ -91,3 +91,32 @@ class UserSignupForm(UserCreationForm):
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
     readonly_fields = ("last_login", "groups", "date_joined", "user_permissions")
+
+
+class CustomLoginForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super(CustomLoginForm, self).__init__(*args, **kwargs)
+    
+    username = forms.CharField(
+        label="",
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "Username",
+                "class": "form-control text-center",
+                
+            }
+        ),
+    )
+    password = forms.CharField(
+        label="",
+        max_length=30,
+        required=True,
+        widget=forms.PasswordInput(
+            attrs={
+                "placeholder": "Password",
+                "class": "form-control text-center",
+            }
+        ),
+    )

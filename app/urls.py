@@ -10,5 +10,5 @@ urlpatterns = [
     path("newBook/", views.NewBookView, name="newBook"),
     path("newPost/<str:bookId>", views.NewPostView, name="newPost"),
     path("newPost/", views.NewPostView, name="newPost"),
-    path("discussion/<str:bookId>", views.DiscussionView, name="discussion"),
+    path("discussion/<str:bookId>", views.DiscussionView, name="discussion")
 ]

@@ -1,11 +1,29 @@
 {% extends "base.html" %}
 
 {% block content%}
-<h2>Log In</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="" class="mb-5">Enter</button>
-    <h3><a href="{% url 'signup' %}">Click here to sign up!</a></h3>
-</form>
+<style>
+    .login_form {
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center; 
+        width: 500px; 
+        box-shadow: 1px 1px 20px black;
+    }
+    form p {
+        width: 100%;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<div class="login_form bg-dark">
+    <h2 class="text-white">Login</h2>
+    <form method="post" class="mb-5">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-warning" type="">Login</button>
+    </form>
+    <h5><a class="text-white" href="{% url 'signup' %}">Click here to sign up!</a></h5>
+</div>
 {% endblock %}

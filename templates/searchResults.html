@@ -21,20 +21,12 @@
           <div class="card-body">
             <h4 class="card-title">
               {% if bookInDatabase.author %}
-              {{bookInDatabase.author}}tag
+              {{bookInDatabase.author}}
               {% else %}
               <span>No author listed</span>
               {% endif %}
             </h4>
             <p class="card-text pe-5">{{bookInDatabase.description}}</p>
-            <!-- <form action="/discussion/" method="GET"> -->
-              <!-- {% csrf_token %}  -->
-              <!-- <input type="hidden" name="title" value="{{bookInDatabase.title}}" />
-              <input type="hidden" name="author" value="{{bookInDatabase.author}}" />
-              <input type="hidden" name="description" value="{{bookInDatabase.description}}" />
-              <input type="hidden" name="thumbnail" value="{{bookInDatabase.thumbnail}}" />
-              <input type="hidden" name="bookId" value="{{bookInDatabase.bookId}}" /> -->
-              <!-- </form> -->
             <a href="/discussion/{{bookInDatabase.bookId}}" class="btn btn-primary">Join a discussion</a>
           </div>
         </div>

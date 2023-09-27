@@ -2,20 +2,40 @@
 
 {% block content %}
 {% if user.is_authenticated %}
-<form action="searchResults" method="get">
-  <div class="flex w-100">
-    <div class="row gap-3 justify-content-center">
-      <div class="col-md-6 col-sm-12">
-        <input type="text" class="form-control rounded text-center shadow-sm" placeholder="Title" name="title">
-      </div>
-      <div class="col-md-6 col-sm-12">
-        <input type="text" class="form-control rounded text-center shadow-sm" placeholder="Author" name="author">
-      </div>
-      <div class="col-md-6 col-sm-12">
-        <button class="form-control btn btn-info rounded shadow-sm">Search</button>
+<style>
+  .signup_form {
+      background-color: #ddd;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center; 
+      width: 500px; 
+      box-shadow: 1px 1px 20px black;
+  }
+  form p {
+      width: 100%;
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+  }
+</style>
+
+<div class="signup_form bg-dark">
+  <h2 class="text-white">Book Search</h2>
+  <form action="searchResults" method="get">
+    <div class="flex">
+      <div class="row gap-3 justify-content-center">
+        <div class="col-12">
+          <input type="text" class="form-control text-center shadow-sm" placeholder="Title" name="title">
+        </div>
+        <div class="col-12">
+          <input type="text" class="form-control text-center shadow-sm" placeholder="Author" name="author">
+        </div>
+        <div class="col-12 col-md-6">
+          <button class="form-control btn btn-warning shadow-sm">Search</button>
+        </div>
       </div>
     </div>
-  </div>
-</form>
+  </form>
+</div>
 {% endif %}
 {% endblock %}

@@ -4,10 +4,11 @@ from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
+from django.contrib.auth.views import LoginView
 from django.views import generic
 
 from urllib.parse import urlencode
-from .forms import UserSignupForm
+from .forms import CustomLoginForm, UserSignupForm
 from app.models import Book, Post
 import requests
 from dotenv import load_dotenv
@@ -27,7 +28,7 @@ def SearchResultsView(request):
     params = {
         'q': request.GET['title'] + " " + request.GET['author'], 
         'key': os.environ.get('API_KEY'),
-        'maxResults': 40
+        'maxResults': 30
     }
     url = base_url + urlencode(params)
     print(url)
@@ -65,13 +66,13 @@ def SearchResultsView(request):
             print(request.GET['author'].lower() in filteredList[0]["author"].lower())
 
             # Do additional sorting of the search results
+            filteredList.sort(key=lambda x: x["title"] is not None and request.GET['title'].lower() == x["title"].lower(), reverse=True)
+            filteredList.sort(key=lambda x: x["author"] is not None and request.GET['author'].lower() == x["author"].lower(), reverse=True)
+            filteredList.sort(key=lambda x: x["title"] is not None and request.GET["title"].lower() in x["title"].lower(), reverse=True)
+            filteredList.sort(key=lambda x: x["author"] is not None and request.GET["author"].lower() in x["author"].lower(), reverse=True)
             filteredList.sort(key=lambda x: x["thumbnail"] is not None, reverse=True)
             filteredList.sort(key=lambda x: x["description"] is not None, reverse=True)
             filteredList.sort(key=lambda x: x["author"] is not None, reverse=True)
-            filteredList.sort(key=lambda x: x["author"] is not None and request.GET["author"].lower() in x["author"].lower(), reverse=True)
-            filteredList.sort(key=lambda x: x["title"] is not None and request.GET["title"].lower() in x["title"].lower(), reverse=True)
-            filteredList.sort(key=lambda x: x["author"] is not None and request.GET['author'].lower() == x["author"].lower(), reverse=True)
-            filteredList.sort(key=lambda x: x["title"] is not None and request.GET['title'].lower() == x["title"].lower(), reverse=True)
 
             return render(request, "searchResults.html", { "booksInDatabase": booksInDb, "searchResult": filteredList })
         else:
@@ -164,3 +165,8 @@ class SignUpView(generic.CreateView):
     form_class = UserSignupForm
     success_url = reverse_lazy("login")
     template_name = "registration/signup.html"
+
+class CustomLoginView(LoginView):
+    form_class = CustomLoginForm
+    success_url = reverse_lazy("home")
+    template_name = "registration/login.html"
